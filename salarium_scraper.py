@@ -68,6 +68,7 @@ async def _enter_calculator(page: Page) -> bool:
             await btn.wait_for(state="visible", timeout=2000)
             await btn.click()
             await asyncio.sleep(4.0)
+            await page.screenshot(path="/tmp/debug.png", full_page=True)
             return True
         except Exception:
             continue
