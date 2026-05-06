@@ -467,10 +467,10 @@ async def run_simulations(
                     await asyncio.sleep(4.0)  # augmenté de 2.0 → 4.0
                     await _enter_calculator(page)
                     try:
-                        await page.wait_for_load_state("networkidle", timeout=15_000)
-                    except PlaywrightTimeoutError:
+                        await page.wait_for_selector("app-options-list[translationcode='nogas'] input", timeout=10_000)
+                    except Exception:
                         pass
-                    await asyncio.sleep(4.0)  # augmenté de 2.0 → 4.0
+                    await asyncio.sleep(4.0)
                 except Exception as e:
                     _log(sim_idx, f"❌ Échec chargement : {e}")
                     for age in ages:
