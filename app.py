@@ -7,6 +7,11 @@ from itertools import product
 import pandas as pd
 import streamlit as st
 
+@st.cache_resource
+def install_chromium():
+    subprocess.run(["playwright", "install", "chromium"], check=True)
+
+install_chromium()
 from salarium_scraper import run_simulations, Combination
 from salarium_options import (
     BRANCHES, REGIONS, PROFESSIONS,
@@ -107,11 +112,6 @@ if "results_df" not in st.session_state:
 run = st.button("🚀 Lancer", type="primary", use_container_width=True)
 
 if run:
-    import subprocess
-    try:
-        subprocess.run(["playwright", "install", "chromium"], check=True)
-    except Exception as e:
-        st.error(f"Erreur installation navigateurs: {e}")
     combos = []
     for pos, form, sex, nat, taille, tre, pai, contrat in product(
         sel_positions, sel_formations, sel_sexes, sel_nationalites,
