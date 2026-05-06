@@ -552,7 +552,7 @@ async def run_simulations(
                             await page.wait_for_load_state("networkidle", timeout=8000)
                         except PlaywrightTimeoutError:
                             pass
-                        await asyncio.sleep(1.0)
+                        await asyncio.sleep(3.0)
 
                         amounts = await _extract_salary_panel(page)
                         row["q1"] = amounts["q1"]
