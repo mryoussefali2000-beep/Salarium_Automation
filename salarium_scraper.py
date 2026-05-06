@@ -33,13 +33,13 @@ TC = {
     "type_contrat":      "hasHourContract",
 }
 
-MONEY_RE = re.compile(r"(\d{1,3}(?:[\s'’]\d{3})+|\d{3,6})(?:[.,]\d{1,2})?")
+MONEY_RE = re.compile(r"(\d{1,3}(?:[\s'']\d{3})+|\d{3,6})(?:[.,]\d{1,2})?")
 
 def _parse_money(text: str) -> Optional[float]:
     m = MONEY_RE.search(text)
     if not m:
         return None
-    cleaned = m.group(0).replace("'", "").replace("’", "").replace("\u00a0", "").replace(" ", "")
+    cleaned = m.group(0).replace("'", "").replace("'", "").replace("\u00a0", "").replace(" ", "")
     if "," in cleaned and "." in cleaned:
         cleaned = cleaned.replace(".", "").replace(",", ".")
     elif "," in cleaned:
@@ -67,7 +67,7 @@ async def _enter_calculator(page: Page) -> bool:
             btn = page.get_by_role("button", name=re.compile(txt, re.I)).first
             await btn.wait_for(state="visible", timeout=2000)
             await btn.click()
-            await asyncio.sleep(2.0)
+            await asyncio.sleep(4.0)
             return True
         except Exception:
             continue
@@ -125,7 +125,7 @@ async def _fill_dropdown(
                 btn_affichage = container.locator("button[aria-label=\"Bouton d'affichage\"]").first
                 if await btn_affichage.is_visible(timeout=300):
                     await btn_affichage.click(force=True)
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(2.5)
             except Exception:
                 pass
 
@@ -178,7 +178,7 @@ async def _fill_dropdown(
         if field_key in ["branche", "region", "profession"]:
             try:
                 await field_input.click(force=True)
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(0.)
                 await field_input.fill("")
 
                 pure_words = [w for w in re.findall(r"[A-Za-zÀ-ÿ]{4,}", full_label) if w.lower() not in ("avec", "pour", "dans", "autres", "personnel", "supérieur", "inférieur")]
@@ -304,24 +304,18 @@ async def _set_radio(page: Page, field_key: str, value: str, log: Optional[Calla
     target_val = "0"
 
     if field_key == "sexe":
-        # Inversion demandée : si c'est Homme on met 0 (ou 2), si Femme on met 1
-        # On ajuste selon ton test :
         target_val = "0" if "homme" in v_low else "1"
 
     elif field_key == "type_contrat":
-        # Inversion demandée pour Horaire/Mensuel
-        # Si c'est Salaire horaire on met 0, sinon 1
         target_val = "0" if "horaire" in v_low else "1"
 
     elif field_key in ["treizieme", "paiements"]:
-        # Standard pour Oui/Non (à inverser aussi si besoin)
         target_val = "1" if "oui" in v_low else "0"
 
     # 3. Clic forcé sur l'input natif par sa valeur
     try:
         radio = control.locator(f"input[type='radio'][value='{target_val}']")
 
-        # Le script JS force le clic et prévient Angular du changement
         await radio.evaluate("""el => {
             el.click();
             el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -458,7 +452,7 @@ async def run_simulations(
         browser = await p.chromium.launch(
             headless=True,
             args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--single-process"]
-            )
+        )
         context = await browser.new_context(
             viewport={"width": 1400, "height": 900}, locale="fr-CH",
         )
@@ -470,13 +464,13 @@ async def run_simulations(
 
                 try:
                     await page.goto(url, wait_until="networkidle", timeout=60_000)
-                    await asyncio.sleep(2.0)
+                    await asyncio.sleep(4.0)  # augmenté de 2.0 → 4.0
                     await _enter_calculator(page)
                     try:
                         await page.wait_for_load_state("networkidle", timeout=15_000)
                     except PlaywrightTimeoutError:
                         pass
-                    await asyncio.sleep(2.0)
+                    await asyncio.sleep(4.0)  # augmenté de 2.0 → 4.0
                 except Exception as e:
                     _log(sim_idx, f"❌ Échec chargement : {e}")
                     for age in ages:
@@ -489,45 +483,45 @@ async def run_simulations(
 
                     _log(sim_idx, f"  Branche : {combo.branche[:50]}…")
                     await _fill_dropdown(page, "branche", combo.branche, "branche", log=log_cb)
-                    await asyncio.sleep(1.5)
+                    await asyncio.sleep(2.5)  # augmenté de 1.5 → 2.5
 
                     _log(sim_idx, f"  Région : {combo.region}")
                     await _fill_dropdown(page, "region", combo.region, "région", log=log_cb)
-                    await asyncio.sleep(1.5)
+                    await asyncio.sleep(2.5)  # augmenté de 1.5 → 2.5
 
                     _log(sim_idx, f"  Profession : {combo.profession[:50]}…")
                     await _fill_dropdown(page, "profession", combo.profession, "Indiquez la profession", log=log_cb)
-                    await asyncio.sleep(2.5)
+                    await asyncio.sleep(4.0)  # augmenté de 2.5 → 4.0
 
                     _log(sim_idx, "  Configuration des champs complémentaires…")
 
                     await _fill_dropdown(page, "position", combo.position, log=log_cb)
-                    await asyncio.sleep(0.8)
+                    await asyncio.sleep(1.5)  # augmenté de 0.8 → 1.5
 
                     await _fill_dropdown(page, "formation", combo.formation, log=log_cb)
-                    await asyncio.sleep(0.8)
+                    await asyncio.sleep(1.5)  # augmenté de 0.8 → 1.5
 
                     await _set_numeric(page, "horaire", combo.horaire_hebdo)
-                    await asyncio.sleep(0.8)
+                    await asyncio.sleep(1.5)  # augmenté de 0.8 → 1.5
 
                     await _set_radio(page, "sexe", combo.sexe, log=log_cb)
-                    await asyncio.sleep(0.8)
+                    await asyncio.sleep(1.5)  # augmenté de 0.8 → 1.5
 
                     await _fill_dropdown(page, "nationalite", combo.nationalite, log=log_cb)
-                    await asyncio.sleep(0.8)
+                    await asyncio.sleep(1.5)  # augmenté de 0.8 → 1.5
 
                     await _fill_dropdown(page, "taille", combo.taille, log=log_cb)
-                    await asyncio.sleep(0.8)
+                    await asyncio.sleep(1.5)  # augmenté de 0.8 → 1.5
 
                     await _set_radio(page, "treizieme", combo.treizieme, log=log_cb)
-                    await asyncio.sleep(0.8)
+                    await asyncio.sleep(1.5)  # augmenté de 0.8 → 1.5
 
                     await _set_radio(page, "paiements", combo.paiements, log=log_cb)
-                    await asyncio.sleep(0.8)
+                    await asyncio.sleep(1.5)  # augmenté de 0.8 → 1.5
 
                     contrat_radio = "Oui" if "horaire" in combo.type_contrat.lower() else "Non"
                     await _set_radio(page, "type_contrat", contrat_radio, log=log_cb)
-                    await asyncio.sleep(1.0)
+                    await asyncio.sleep(2.0)  # augmenté de 1.0 → 2.0
 
                 except Exception as e:
                     _log(sim_idx, f"❌ Échec config : {e}")
