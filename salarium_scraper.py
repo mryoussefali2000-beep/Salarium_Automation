@@ -67,6 +67,7 @@ async def _enter_calculator(page: Page) -> bool:
             btn = page.get_by_role("button", name=re.compile(txt, re.I)).first
             await btn.wait_for(state="visible", timeout=2000)
             await btn.click()
+            await page.goto(url, wait_until="networkidle", timeout=60_000)
             await asyncio.sleep(4.0)
             await page.screenshot(path="/tmp/debug.png", full_page=True)
             return True
