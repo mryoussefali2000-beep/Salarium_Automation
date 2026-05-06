@@ -107,6 +107,11 @@ if "results_df" not in st.session_state:
 run = st.button("🚀 Lancer", type="primary", use_container_width=True)
 
 if run:
+    import subprocess
+    try:
+        subprocess.run(["playwright", "install", "chromium"], check=True)
+    except Exception as e:
+        st.error(f"Erreur installation navigateurs: {e}")
     combos = []
     for pos, form, sex, nat, taille, tre, pai, contrat in product(
         sel_positions, sel_formations, sel_sexes, sel_nationalites,
