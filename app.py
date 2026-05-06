@@ -3,15 +3,8 @@ import io
 import time
 from datetime import datetime
 from itertools import product
-import subprocess
 import pandas as pd
 import streamlit as st
-
-@st.cache_resource
-def install_chromium():
-    subprocess.run(["playwright", "install", "chromium"], check=True)
-
-install_chromium()
 from salarium_scraper import run_simulations, Combination
 from salarium_options import (
     BRANCHES, REGIONS, PROFESSIONS,
