@@ -2,3 +2,5 @@ streamlit>=1.32
 pandas>=2.0
 playwright>=1.42
 openpyxl>=3.1
+libgbm1
+libasound2
