@@ -142,6 +142,9 @@ if run:
             delay_seconds=1.0,
             progress_callback=on_progress,
         ))
+        import os
+        if os.path.exists("/tmp/debug.png"):
+            st.image("/tmp/debug.png", caption="Ce que Playwright voit")
         st.session_state.results_df = pd.DataFrame(results)
         st.success(f"✅ Terminé en {int((time.time()-start_time)//60)}m.")
     except Exception as e:
