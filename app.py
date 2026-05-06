@@ -134,7 +134,7 @@ if run:
 
     try:
         results = asyncio.run(run_simulations(
-            url="https://www.gate.bfs.admin.ch/salarium/public/index.html#/start",
+            url="https://www.salarium.bfs.admin.ch/",
             combinations=combos,
             age_min=age_start,
             age_max=AGE_MAX,
