@@ -455,7 +455,11 @@ async def run_simulations(
     sim_idx = 0
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=headless)
+        browser = await p.chromium.launch(
+                headless=True,
+                executable_path="/usr/bin/chromium",
+                args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--single-process"]
+            )
         context = await browser.new_context(
             viewport={"width": 1400, "height": 900}, locale="fr-CH",
         )
