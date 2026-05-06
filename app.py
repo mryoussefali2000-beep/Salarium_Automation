@@ -109,6 +109,7 @@ run = st.button("🚀 Lancer", type="primary", use_container_width=True)
 if run:
     import subprocess
     try:
+        subprocess.run(["playwright", "install-deps", "chromium"], check=True)
         subprocess.run(["playwright", "install", "chromium"], check=True)
     except Exception as e:
         st.error(f"Erreur installation navigateurs: {e}")
