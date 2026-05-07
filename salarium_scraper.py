@@ -452,9 +452,7 @@ async def run_simulations(
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-                 headless=True,
-                 args=["--no-sandbox"]
-            )            
+                 headless=True            )            
         context = await browser.new_context(
             viewport={"width": 1400, "height": 900}, locale="fr-CH",
         )
