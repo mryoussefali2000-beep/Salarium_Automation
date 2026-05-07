@@ -338,29 +338,19 @@ async def _set_radio(page: Page, field_key: str, value: str, log: Optional[Calla
 async def _extract_salary_panel(page: Page) -> dict:
     result = {"q1": None, "mediane": None, "q3": None}
 
-    data = await page.evaluate(
-        """
+    all_texts = await page.evaluate("""
         () => {
-            const nodes = [];
+            const texts = [];
             for (const el of document.querySelectorAll('*')) {
-                const cs = window.getComputedStyle(el);
-                if (cs.display === 'none' || cs.visibility === 'hidden') continue;
                 const direct = Array.from(el.childNodes)
                     .filter(n => n.nodeType === Node.TEXT_NODE)
-                    .map(n => n.textContent.trim()).join(' ').trim();
-                if (!direct) continue;
-                const rect = el.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) continue;
-                nodes.push({
-                    text: direct,
-                    cx: rect.x + rect.width / 2,
-                    cy: rect.y + rect.height / 2,
-                });
+                    .map(n => n.textContent.trim())
+                    .filter(t => t.length > 0);
+                texts.push(...direct);
             }
-            return nodes;
+            return texts;
         }
-        """
-    )
+    """)
 
     label_keys = {
         "25% gagnent moins": "q1",
@@ -369,44 +359,17 @@ async def _extract_salary_panel(page: Page) -> dict:
         "25% gagnent plus": "q3",
     }
 
-    label_pos = {}
-    for n in data:
+    last_label = None
+    for text in all_texts:
         for label, key in label_keys.items():
-            if label in n["text"] and key not in label_pos:
-                label_pos[key] = (n["cx"], n["cy"])
+            if label in text:
+                last_label = key
                 break
-
-    money_nodes = []
-    for n in data:
-        v = _parse_money(n["text"])
-        if v and 1000 <= v <= 1_000_000:
-            money_nodes.append({"cx": n["cx"], "cy": n["cy"], "value": v})
-
-    for key, (lx, ly) in label_pos.items():
-        best = None
-        best_score = float("inf")
-        for m in money_nodes:
-            dx = abs(m["cx"] - lx)
-            dy = m["cy"] - ly
-            if dy < 5 or dy > 200:
-                continue
-            score = dx * 2 + dy * 0.5
-            if score < best_score:
-                best_score = score
-                best = m
-        if best:
-            result[key] = best["value"]
-
-    if any(v is None for v in result.values()) and len(money_nodes) >= 3:
-        unique = {}
-        for m in money_nodes:
-            unique[m["value"]] = m
-        sorted_m = sorted(unique.values(), key=lambda x: x["cx"])
-        if len(sorted_m) >= 3:
-            keys = ["q1", "mediane", "q3"]
-            for i, k in enumerate(keys):
-                if result[k] is None:
-                    result[k] = sorted_m[i]["value"]
+        if last_label and result[last_label] is None:
+            v = _parse_money(text)
+            if v and 1000 <= v <= 1_000_000:
+                result[last_label] = v
+                last_label = None
 
     return result
 
