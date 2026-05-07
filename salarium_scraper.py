@@ -36,18 +36,22 @@ TC = {
 MONEY_RE = re.compile(r"(\d{1,3}(?:[\s'']\d{3})+|\d{3,6})(?:[.,]\d{1,2})?")
 
 def _parse_money(text: str) -> Optional[float]:
-    m = MONEY_RE.search(text)
-    if not m:
-        return None
-    cleaned = m.group(0).replace("'", "").replace("'", "").replace("\u00a0", "").replace(" ", "")
-    if "," in cleaned and "." in cleaned:
-        cleaned = cleaned.replace(".", "").replace(",", ".")
-    elif "," in cleaned:
-        cleaned = cleaned.replace(",", ".")
-    try:
-        return float(cleaned)
-    except ValueError:
-        return None
+    # Cherche les montants avec séparateur (6'500) ou sans (2024)
+    patterns = [
+        r"\d{1,3}(?:[\s'\u2019\u00a0]\d{3})+",  # avec séparateur
+        r"\d{4,6}",                                # 4-6 chiffres sans séparateur
+    ]
+    for pattern in patterns:
+        m = re.search(pattern, text)
+        if m:
+            cleaned = m.group(0).replace("'", "").replace("\u2019", "").replace("\u00a0", "").replace(" ", "")
+            try:
+                val = float(cleaned)
+                if 1000 <= val <= 999999:
+                    return val
+            except ValueError:
+                pass
+    return None
 
 # ============================================================================
 # Page d'accueil
