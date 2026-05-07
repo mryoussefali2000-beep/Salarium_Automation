@@ -271,6 +271,8 @@ async def _set_numeric(page: Page, field_key: str, value) -> bool:
             await input_loc.click()
             await input_loc.fill(val_str)
             await input_loc.press("Enter")
+            await asyncio.sleep(0.3)
+            await input_loc.press("Tab")
             await asyncio.sleep(0.5)
             return True
     except Exception as e:
