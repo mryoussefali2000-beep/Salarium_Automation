@@ -340,38 +340,26 @@ async def _set_radio(page: Page, field_key: str, value: str, log: Optional[Calla
 async def _extract_salary_panel(page: Page) -> dict:
     result = {"q1": None, "mediane": None, "q3": None}
 
-    all_texts = await page.evaluate("""
-        () => {
-            const texts = [];
-            for (const el of document.querySelectorAll('*')) {
-                const direct = Array.from(el.childNodes)
-                    .filter(n => n.nodeType === Node.TEXT_NODE)
-                    .map(n => n.textContent.trim())
-                    .filter(t => t.length > 0);
-                texts.push(...direct);
-            }
-            return texts;
+    try:
+        # Récupère les labels et montants directement par classe CSS
+        titles = await page.locator("div.result-title-column").all_inner_texts()
+        amounts = await page.locator("div.result-column").all_inner_texts()
+
+        label_map = {
+            "25% gagnent moins": "q1",
+            "Médiane": "mediane",
+            "Mediane": "mediane",
+            "25% gagnent plus": "q3",
         }
-    """)
 
-    label_keys = {
-        "25% gagnent moins": "q1",
-        "Médiane": "mediane",
-        "Mediane": "mediane",
-        "25% gagnent plus": "q3",
-    }
-
-    last_label = None
-    for text in all_texts:
-        for label, key in label_keys.items():
-            if label in text:
-                last_label = key
-                break
-        if last_label and result[last_label] is None:
-            v = _parse_money(text)
-            if v and 1000 <= v <= 1_000_000:
-                result[last_label] = v
-                last_label = None
+        for i, title in enumerate(titles):
+            for label, key in label_map.items():
+                if label in title and i < len(amounts):
+                    v = _parse_money(amounts[i])
+                    if v and 1000 <= v <= 999999:
+                        result[key] = v
+    except Exception as e:
+        print(f"Erreur extraction : {e}")
 
     return result
 
