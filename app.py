@@ -16,7 +16,7 @@ MAX_COMBINATIONS = 20
 AGE_MAX = 65
 
 st.set_page_config(page_title="Salarium Batch", page_icon="💰", layout="wide")
-
+st.image("logohrbenchinstituteVFtrespetit.jpg", width=60)
 # --- MODIFICATION : CSS POUR ENLEVER LA BARRE À GAUCHE ---
 st.markdown("""
     <style>
